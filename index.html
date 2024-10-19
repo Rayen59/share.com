@@ -19,7 +19,7 @@
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        .photo-item {
+        .post-item {
             margin-bottom: 20px;
             border: 1px solid #ddd;
             padding: 10px;
@@ -42,75 +42,105 @@
 <body>
 
 <div class="container">
-    <h1>Partagez vos Photos</h1>
-    <input type="file" id="photoInput" accept="image/*" required>
-    <input type="text" id="comment" placeholder="Votre commentaire" required>
-    <button onclick="addPhoto()">Partager</button>
+    <h1>Partagez vos Photos ou Commentaires</h1>
+    
+    <h3>Ajouter une Photo</h3>
+    <input type="file" id="photoInput" accept="image/*">
+    <button onclick="addPhoto()">Partager la Photo</button>
 
-    <div id="photosContainer"></div>
+    <h3>Ajouter un Commentaire</h3>
+    <input type="text" id="commentInput" placeholder="Votre commentaire" required>
+    <button onclick="addComment()">Partager le Commentaire</button>
+
+    <div id="postsContainer"></div>
 </div>
 
 <script>
-    // Fonction pour charger les photos et commentaires du localStorage
-    function loadPhotos() {
-        const photosContainer = document.getElementById('photosContainer');
-        photosContainer.innerHTML = '';
+    // Fonction pour charger les publications du localStorage
+    function loadPosts() {
+        const postsContainer = document.getElementById('postsContainer');
+        postsContainer.innerHTML = '';
 
-        const photos = JSON.parse(localStorage.getItem('photos')) || [];
-        photos.forEach((photo, index) => {
-            const photoItem = document.createElement('div');
-            photoItem.classList.add('photo-item');
+        const posts = JSON.parse(localStorage.getItem('posts')) || [];
+        posts.forEach((post, index) => {
+            const postItem = document.createElement('div');
+            postItem.classList.add('post-item');
 
-            photoItem.innerHTML = `
-                <h3>The Dictatorian Ranler Organisation</h3>
-                <img src="${photo.url}" alt="Photo partagée">
-                <p>${photo.comment}</p>
-                <button class="delete-button" onclick="deletePhoto(${index})">Supprimer</button>
-            `;
+            if (post.type === 'photo') {
+                postItem.innerHTML = `
+                    <h3>The Dictatorian Ranler Organisation</h3>
+                    <img src="${post.content}" alt="Photo partagée">
+                    <button class="delete-button" onclick="deletePost(${index})">Supprimer</button>
+                `;
+            } else if (post.type === 'comment') {
+                postItem.innerHTML = `
+                    <h3>The Dictatorian Ranler Organisation</h3>
+                    <p>${post.content}</p>
+                    <button class="delete-button" onclick="deletePost(${index})">Supprimer</button>
+                `;
+            }
 
-            photosContainer.appendChild(photoItem);
+            postsContainer.appendChild(postItem);
         });
     }
 
     // Fonction pour ajouter une photo
     function addPhoto() {
         const photoInput = document.getElementById('photoInput');
-        const comment = document.getElementById('comment').value;
-
-        if (photoInput.files.length > 0 && comment) {
+        
+        if (photoInput.files.length > 0) {
             const file = photoInput.files[0];
             const reader = new FileReader();
 
             reader.onload = function(event) {
-                const photos = JSON.parse(localStorage.getItem('photos')) || [];
-                photos.push({ url: event.target.result, comment: comment });
-                localStorage.setItem('photos', JSON.stringify(photos));
+                const posts = JSON.parse(localStorage.getItem('posts')) || [];
+                posts.push({ type: 'photo', content: event.target.result });
+                localStorage.setItem('posts', JSON.stringify(posts));
 
-                loadPhotos(); // Recharge les photos après ajout
+                loadPosts(); // Recharge les publications après ajout
 
-                // Réinitialiser les champs d'entrée
+                // Réinitialiser le champ d'entrée
                 photoInput.value = '';
-                document.getElementById('comment').value = '';
             };
 
             reader.readAsDataURL(file); // Lire le fichier et convertir en URL de données
         } else {
-            alert('Veuillez sélectionner une photo et entrer un commentaire.');
+            alert('Veuillez sélectionner une photo.');
         }
     }
 
-    // Fonction pour supprimer une photo
-    function deletePhoto(index) {
-        const photos = JSON.parse(localStorage.getItem('photos')) || [];
-        photos.splice(index, 1);
-        localStorage.setItem('photos', JSON.stringify(photos));
+    // Fonction pour ajouter un commentaire
+    function addComment() {
+        const commentInput = document.getElementById('commentInput');
+        const comment = commentInput.value.trim();
 
-        loadPhotos(); // Recharge les photos après suppression
+        if (comment) {
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            posts.push({ type: 'comment', content: comment });
+            localStorage.setItem('posts', JSON.stringify(posts));
+
+            loadPosts(); // Recharge les publications après ajout
+
+            // Réinitialiser le champ d'entrée
+            commentInput.value = '';
+        } else {
+            alert('Veuillez entrer un commentaire.');
+        }
     }
 
-    // Charger les photos lors du chargement de la page
-    window.onload = loadPhotos;
+    // Fonction pour supprimer une publication
+    function deletePost(index) {
+        const posts = JSON.parse(localStorage.getItem('posts')) || [];
+        posts.splice(index, 1);
+        localStorage.setItem('posts', JSON.stringify(posts));
+
+        loadPosts(); // Recharge les publications après suppression
+    }
+
+    // Charger les publications lors du chargement de la page
+    window.onload = loadPosts;
 </script>
 
 </body>
 </html>
+
