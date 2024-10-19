@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partage de Photos et Commentaires</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .photo-item {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
+        .delete-button {
+            background-color: #ff4c4c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Partagez vos Photos</h1>
+    <input type="file" id="photoInput" accept="image/*" required>
+    <input type="text" id="comment" placeholder="Votre commentaire" required>
+    <button onclick="addPhoto()">Partager</button>
+
+    <div id="photosContainer"></div>
+</div>
+
+<script>
+    // Fonction pour charger les photos et commentaires du localStorage
+    function loadPhotos() {
+        const photosContainer = document.getElementById('photosContainer');
+        photosContainer.innerHTML = '';
+
+        const photos = JSON.parse(localStorage.getItem('photos')) || [];
+        photos.forEach((photo, index) => {
+            const photoItem = document.createElement('div');
+            photoItem.classList.add('photo-item');
+
+            photoItem.innerHTML = `
+                <h3>The Dictatorian Ranler Organisation</h3>
+                <img src="${photo.url}" alt="Photo partagée">
+                <p>${photo.comment}</p>
+                <button class="delete-button" onclick="deletePhoto(${index})">Supprimer</button>
+            `;
+
+            photosContainer.appendChild(photoItem);
+        });
+    }
+
+    // Fonction pour ajouter une photo
+    function addPhoto() {
+        const photoInput = document.getElementById('photoInput');
+        const comment = document.getElementById('comment').value;
+
+        if (photoInput.files.length > 0 && comment) {
+            const file = photoInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const photos = JSON.parse(localStorage.getItem('photos')) || [];
+                photos.push({ url: event.target.result, comment: comment });
+                localStorage.setItem('photos', JSON.stringify(photos));
+
+                loadPhotos(); // Recharge les photos après ajout
+
+                // Réinitialiser les champs d'entrée
+                photoInput.value = '';
+                document.getElementById('comment').value = '';
+            };
+
+            reader.readAsDataURL(file); // Lire le fichier et convertir en URL de données
+        } else {
+            alert('Veuillez sélectionner une photo et entrer un commentaire.');
+        }
+    }
+
+    // Fonction pour supprimer une photo
+    function deletePhoto(index) {
+        const photos = JSON.parse(localStorage.getItem('photos')) || [];
+        photos.splice(index, 1);
+        localStorage.setItem('photos', JSON.stringify(photos));
+
+        loadPhotos(); // Recharge les photos après suppression
+    }
+
+    // Charger les photos lors du chargement de la page
+    window.onload = loadPhotos;
+</script>
+
+</body>
+</html>
